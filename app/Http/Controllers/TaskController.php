@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
+use App\Traits\JsonResponse;
+use Illuminate\Http\Request;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Repositories\TaskRepositoryInterface;
-use App\Traits\JsonResponse;
 
 class TaskController extends Controller
 {
@@ -17,21 +18,14 @@ class TaskController extends Controller
     {
         $this->taskRepository = $taskRepository;
     }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
         $tasks = $this->taskRepository->getAll();
-        return $this->successResponse($tasks, "Tasks fetched successfuly", 200);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return $this->successResponse($tasks, "Tasks fetched successfully", 200);
     }
 
     /**
@@ -39,7 +33,8 @@ class TaskController extends Controller
      */
     public function store(StoreTaskRequest $request)
     {
-        //
+        $task = $this->taskRepository->create($request->all());
+        return $this->successResponse($task, "Task created successfully", 201);
     }
 
     /**
@@ -47,15 +42,9 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Task $task)
-    {
-        //
+        // Assuming the Task model's primary key is named `id`.
+        $task = $this->taskRepository->getById($task->id);
+        return $this->successResponse($task, "Task fetched successfully", 200);
     }
 
     /**
@@ -63,7 +52,10 @@ class TaskController extends Controller
      */
     public function update(UpdateTaskRequest $request, Task $task)
     {
-        //
+        $this->authorize('update', $task);
+        // Assuming that $task->id gives the id of the task.
+        $updatedTask = $this->taskRepository->update($task->id, $request->all());
+        return $this->successResponse($updatedTask, "Task updated successfully", 200);
     }
 
     /**
@@ -71,6 +63,8 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
-        //
+        $this->authorize("delete", $task);
+        $this->taskRepository->delete($task->id);
+        return $this->successResponse(null, "Task deleted successfully", 200);
     }
 }

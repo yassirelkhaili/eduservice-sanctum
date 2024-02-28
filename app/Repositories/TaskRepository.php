@@ -3,12 +3,13 @@
 namespace App\Repositories;
 
 use App\Models\Task;
+use Illuminate\Support\Facades\Auth;
 
 class TaskRepository implements TaskRepositoryInterface
 {
     public function getAll()
     {
-        return Task::all();
+        return Task::where('user_id', Auth::id())->get();;
     }
     public function getById($id)
     {
@@ -22,9 +23,9 @@ class TaskRepository implements TaskRepositoryInterface
 
     public function update($id, array $data)
     {
-        $Task = $this->getById($id);
-        $Task->update($data);
-        return $Task;
+        $task = $this->getById($id);
+        $task->update($data);
+        return $task;
     }
 
     public function delete($id)
